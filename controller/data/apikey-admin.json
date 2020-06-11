@@ -1,0 +1,5 @@
+{
+    "name": "admin",
+    "roles": ["Read", "Write", "Admin"],
+    "properties": {}
+}

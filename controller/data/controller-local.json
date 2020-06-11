@@ -1,0 +1,26 @@
+{
+    "host": "192.168.1.20",
+    "port": 9990,
+    "controller": {
+     "pins": [
+      {
+       "id": 4,
+       "name" : "Table Lamp",
+       "mode": "Output",
+       "value": "High"
+      },
+      {
+        "id": 113,
+        "name" : "Living Room Lamp",
+        "mode": "Output",
+        "value": "High"
+       },
+       {
+        "id": 114,
+        "name" : "Piano",
+        "mode": "Output",
+        "value": "High"
+       }
+     ]
+    }
+}

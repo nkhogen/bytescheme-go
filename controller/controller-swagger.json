@@ -1,0 +1,474 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API Documentation",
+    "title": "Controller by Bytescheme",
+    "version": "1.0.0"
+  },
+  "host": "bytescheme.mynetgear.com",
+  "basePath": "/",
+  "paths": {
+    "/v1/store/keys": {
+      "put": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "Save a key value pair",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Store"
+        ],
+        "x-permission": "Admin",
+        "summary": "Save a key value pair",
+        "operationId": "UpdateStoreKeys",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "description": "Key value pairs to be updated",
+            "name": "Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/KeyValues"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UpdateStoreKeysResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      }
+    },
+    "/v1/store/keys/{key}": {
+      "get": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "List all keys",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Store"
+        ],
+        "x-permission": "Admin",
+        "summary": "List all keys",
+        "operationId": "ListStoreKeys",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key of the value",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Set it to true if the key is a prefix",
+            "name": "prefix",
+            "in": "query",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ListStoreKeysResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "Delete a key or keys",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Store"
+        ],
+        "x-permission": "Admin",
+        "summary": "Delete a key or keys",
+        "operationId": "DeleteStoreKeys",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key of the value",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "Set it to true if the key is a prefix",
+            "name": "prefix",
+            "in": "query",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteStoreKeysResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      }
+    },
+    "/v1/controllers": {
+      "get": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "List all controllers",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Controller"
+        ],
+        "x-permission": "Read",
+        "summary": "List all controllers",
+        "operationId": "ListControllers",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ListControllersResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      }
+    },
+    "/v1/controllers/{controllerId}": {
+      "get": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "Get a controller",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Controller"
+        ],
+        "x-permission": "Read",
+        "summary": "Get a controller",
+        "operationId": "GetController",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "ControllerID",
+            "name": "controllerId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetControllerResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "Update a controller",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Controller"
+        ],
+        "x-permission": "Write",
+        "summary": "Update a controller",
+        "operationId": "UpdateController",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "API key",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "ControllerID",
+            "name": "controllerId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Controller"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UpdateControllerResponse"
+          },
+          "default": {
+            "$ref": "#/responses/APIError"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "APIError": {
+      "description": "APIError is the error",
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Error message",
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status": {
+          "description": "HTTP status for the response",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "bytescheme/controller/model"
+    },
+    "KeyValue": {
+      "description": "Key value pair model",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "KeyValues": {
+      "description": "Key value pairs model",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/KeyValue"
+      }
+    },
+    "Keys": {
+      "description": "Keys in the store",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Controller": {
+      "description": "Controller model",
+      "type": "object",
+      "required": [
+        "id",
+        "pins"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "pins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pin"
+          },
+          "x-go-name": "Pins"
+        }
+      },
+      "x-go-package": "bytescheme/controller/model"
+    },
+    "Pin": {
+      "description": "Pin model",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "ID of the pin",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/definitions/PinMode"
+        },
+        "value": {
+          "$ref": "#/definitions/PinValue"
+        }
+      },
+      "x-go-package": "bytescheme/controller/model"
+    },
+    "PinMode": {
+      "description": "PinMode is the type for the pin mode",
+      "type": "string",
+      "x-go-package": "bytescheme/controller/model",
+      "enum": ["Input", "Output"]
+    },
+    "PinValue": {
+      "description": "PinValue is the type for the pin value",
+      "type": "string",
+      "format": "int32",
+      "x-go-package": "bytescheme/controller/model",
+      "enum": ["High", "Low"]
+    }
+  },
+  "responses": {
+    "APIError": {
+      "description": "APIErrorResponse is all API errors",
+      "schema": {
+        "$ref": "#/definitions/APIError"
+      }
+    },
+    "ListStoreKeysResponse": {
+      "description": "ListStoreKeysResponse is the response model",
+      "schema": {
+        "$ref": "#/definitions/KeyValues"
+      }
+    },
+    "UpdateStoreKeysResponse": {
+      "description": "UpdateStoreKeysResponse is the response model",
+      "schema": {
+        "$ref": "#/definitions/KeyValues"
+      }
+    },
+    "DeleteStoreKeysResponse": {
+      "description": "DeleteStoreKeysResponse is the response model",
+      "schema": {
+        "$ref": "#/definitions/Keys"
+      }
+    },
+    "GetControllerResponse": {
+      "description": "GetControllerResponse is the response model",
+      "schema": {
+        "$ref": "#/definitions/Controller"
+      }
+    },
+    "ListControllersResponse": {
+      "description": "ListControllersResponse is the response model",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Controller"
+        }
+      }
+    },
+    "UpdateControllerResponse": {
+      "description": "UpdateControllerResponse is the response for controller update",
+      "schema": {
+        "$ref": "#/definitions/Controller"
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ApiKey": {
+      "description": "Api key authentication",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "x-meta-array": [
+    "value1",
+    "value2"
+  ],
+  "x-meta-array-obj": [
+    {
+      "name": "obj",
+      "value": "field"
+    }
+  ],
+  "x-meta-value": "value"
+}

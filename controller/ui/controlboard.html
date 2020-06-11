@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<link rel='shortcut icon' href='images/favicon.ico' type='image/x-icon' />
+<title>Device Controller</title>
+<meta name="google-signin-client_id"
+	content="91456297737-d1p2ha4n2847bpsrdrcp72uhp614ar9q.apps.googleusercontent.com">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+<script src="scripts/ng-common.js"></script>
+<script src="scripts/ng-main.js"></script>
+<script src="https://apis.google.com/js/platform.js?onload=onLoad" async
+	defer></script>
+</head>
+<body ng-app="app" ng-controller="controlboard_ctrl" ng-init="init()">
+	<style parse-style>
+.power_off {
+	width: 250px;
+	height: 250px;
+	border: none;
+	background-size: 245px 245px;
+	background-image: url('images/red-off.svg');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.power_on {
+	width: 250px;
+	height: 250px;
+	border: none;
+	background-size: 245px 245px;
+	background-image: url('images/green-on.png');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.play_video {
+	width: 220px;
+	height: 220px;
+	border: none;
+	background-size: 210px 210px;
+	background-image: url('images/video-play.png');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+	margin-left: 20px;
+}
+
+.button_signout {
+	width: 500px;
+	height: 130px;
+	border: none;
+	background-size: 495px 125px;
+	background-image: url('images/signout.jpg');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+h1 {
+	font-size: 65px;
+	font-family: Arial;
+	font-weight: normal;
+	margin-left: 20px;
+}
+
+a:link, a:visited {
+	color: blue;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 30px;
+	margin-left: 20px;
+}
+
+a:hover, a:active {
+	color: red;
+	font-size: 30px;
+	margin-left: 20px;
+}
+
+.device {
+	font-family: Arial;
+	color: blue;
+	font-weight: normal;
+	font-size: 65px;
+	margin-left: 30px;
+}
+
+.label {
+	font-family: Arial;
+	color: blue;
+	font-weight: normal;
+	font-size: 45px;
+	margin-left: 35px;
+}
+
+.select {
+	background: transparent;
+	font-size: 30px;
+	height: 35px;
+	width: 90px;
+	margin-left: 35px;
+}
+
+.schedule_button {
+	width: 235px;
+	height: 250px;
+	border: none;
+	background-size: 230px 245px;
+	background-image: url('images/schedule.jpg');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+	margin-left: 35px;
+}
+
+.event_button {
+	width: 225px;
+	height: 225px;
+	border: none;
+	background-size: 200px 200px;
+	background-image: url('images/cancel.png');
+	background-color: Transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+	margin-left: 35px;
+}
+
+.events {
+	font-family: Arial;
+	color: black;
+	font-weight: normal;
+	font-size: 30px;
+	margin-left: 35px;
+}
+
+.events-row {
+	padding-top:20px;
+}
+
+</style>
+	<script>
+		function onLoad() {
+			gapi.load('auth2', function() {
+				gapi.auth2.init();
+			});
+		}
+	</script>
+	<a href="https://bytescheme.wordpress.com">Info</a>
+	<h1>Hello {{user}}</h1>
+	<button class="button_signout" onclick="signOut()"></button>
+	<table>
+		<tr ng-repeat="(id, device) in devices">
+			<td>
+				<button class={{device.button_css_class}}
+					ng-click="powerHandler(device)"></button>
+			</td>
+			<td><span class="device">{{device.name}}</span></td>
+		</tr>
+	</table>
+</body>
+</html>
