@@ -64,7 +64,11 @@ func NewLocalProcessor(config *model.ProcessorConfig) (model.Processor, error) {
 		config: config,
 	}
 	if config.Host != "" && config.Port > 0 {
-		eventServer, err := service.NewEventServer(config.Host, config.Port)
+		eventServer, err := service.NewEventServer(config.Host, config.Port, func(clientID int) error {
+			// Sync the client with the cached data
+			_, err := processor.SyncController(context.Background(), config.Controller)
+			return err
+		})
 		if err != nil {
 			return nil, model.NewServiceError(500, err)
 		}

@@ -73,7 +73,7 @@ func (registry *Registry) setProcessorConfig(controllerID string, config *model.
 }
 
 // Submit submits the callback which is invoked with the target processor
-func (registry *Registry) Submit(ctx context.Context, controllerID string, callback func(controllerID string, processor model.Processor) error) error {
+func (registry *Registry) Submit(ctx context.Context, controllerID string, callback func(controllerID string, processor model.Processor) (bool, error)) error {
 	registry.rwLock.Lock()
 	registry.rwLock.Unlock()
 	processor, ok := registry.processors[controllerID]
@@ -118,11 +118,14 @@ func (registry *Registry) Submit(ctx context.Context, controllerID string, callb
 		}
 		registry.processors[controllerID] = processor
 	}
-	err := callback(controllerID, processor)
+	saveConfig, err := callback(controllerID, processor)
 	if err != nil {
 		return model.NewServiceError(500, err)
 	}
-	return registry.setProcessorConfig(controllerID, processor.GetConfig())
+	if saveConfig {
+		err = registry.setProcessorConfig(controllerID, processor.GetConfig())
+	}
+	return err
 }
 
 // ListControllers returns all the controllers
@@ -134,13 +137,13 @@ func (registry *Registry) ListControllers(ctx context.Context) ([]*gmodels.Contr
 	}
 	for _, key := range keys {
 		controllerID := strings.TrimPrefix(key, ControllerKeyPrefix)
-		err = registry.Submit(ctx, controllerID, func(controllerID string, processor model.Processor) error {
+		err = registry.Submit(ctx, controllerID, func(controllerID string, processor model.Processor) (bool, error) {
 			controller, err := processor.GetController(ctx, controllerID)
 			if err != nil {
-				return err
+				return false, err
 			}
 			controllers = append(controllers, controller)
-			return nil
+			return false, nil
 		})
 		if err != nil {
 			return []*gmodels.Controller{}, err
@@ -153,9 +156,9 @@ func (registry *Registry) ListControllers(ctx context.Context) ([]*gmodels.Contr
 func (registry *Registry) GetController(ctx context.Context, controllerID string) (*gmodels.Controller, error) {
 	var err error
 	var controller *gmodels.Controller
-	err = registry.Submit(ctx, controllerID, func(controllerID string, processor model.Processor) error {
+	err = registry.Submit(ctx, controllerID, func(controllerID string, processor model.Processor) (bool, error) {
 		controller, err = processor.GetController(ctx, controllerID)
-		return err
+		return false, err
 	})
 	if err != nil {
 		return nil, err
@@ -170,9 +173,9 @@ func (registry *Registry) UpdateController(ctx context.Context, controller *gmod
 	if controller.ID == nil {
 		return cntlr, fmt.Errorf("Invalid controller ID")
 	}
-	err = registry.Submit(ctx, *controller.ID, func(controllerID string, processor model.Processor) error {
+	err = registry.Submit(ctx, *controller.ID, func(controllerID string, processor model.Processor) (bool, error) {
 		cntlr, err = processor.SyncController(ctx, controller)
-		return err
+		return true, err
 	})
 	if err != nil {
 		return nil, model.NewServiceError(500, err)

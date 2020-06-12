@@ -10,14 +10,26 @@
        "value": "High"
       },
       {
+        "id": 112,
+        "name" : "Hydroponic",
+        "mode": "Output",
+        "value": "High"
+      },
+      {
         "id": 113,
-        "name" : "Living Room Lamp",
+        "name" : "Master Outdoor",
         "mode": "Output",
         "value": "High"
        },
        {
         "id": 114,
-        "name" : "Piano",
+        "name" : "Pergola Lights",
+        "mode": "Output",
+        "value": "High"
+       },
+       {
+        "id": 116,
+        "name" : "Fountain",
         "mode": "Output",
         "value": "High"
        }
