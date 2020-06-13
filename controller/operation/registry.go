@@ -31,7 +31,14 @@ func NewRegistry() (*Registry, error) {
 		processors: map[string]model.Processor{},
 		rwLock:     &sync.RWMutex{},
 	}
+	util.ShutdownHandler.RegisterCloseable(registry)
 	return registry, nil
+}
+
+// Close closes the registry
+func (registry *Registry) Close() error {
+	// Each processor has closes on its own
+	return nil
 }
 
 func (registry *Registry) getProcessorConfig(controllerID string) (*model.ProcessorConfig, error) {
@@ -72,7 +79,8 @@ func (registry *Registry) setProcessorConfig(controllerID string, config *model.
 	return nil
 }
 
-// Submit submits the callback which is invoked with the target processor
+// Submit submits the callback which is invoked with the target processor which returns true
+// if the processor config needs to be persisted
 func (registry *Registry) Submit(ctx context.Context, controllerID string, callback func(controllerID string, processor model.Processor) (bool, error)) error {
 	registry.rwLock.Lock()
 	registry.rwLock.Unlock()
@@ -97,9 +105,10 @@ func (registry *Registry) Submit(ctx context.Context, controllerID string, callb
 				// Sync the controller with all the pins
 				// Read existing pin values
 				cntlr, err := processor.SyncController(ctx, &gmodels.Controller{ID: &controllerID, Pins: []*gmodels.Pin{}})
-				if err == nil {
-					config.Controller = cntlr
+				if err != nil {
+					return err
 				}
+				config.Controller = cntlr
 			}
 			// Update version
 			err = registry.setProcessorConfig(controllerID, config)

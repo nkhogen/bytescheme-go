@@ -74,6 +74,7 @@ func NewLocalProcessor(config *model.ProcessorConfig) (model.Processor, error) {
 		}
 		processor.eventServer = eventServer
 	}
+	util.ShutdownHandler.RegisterCloseable(processor)
 	return processor, nil
 }
 

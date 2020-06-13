@@ -47,12 +47,13 @@ func NewStore(config *StoreConfig) (*Store, error) {
 		config: sCfg,
 		db:     db,
 	}
+	util.ShutdownHandler.RegisterCloseable(store)
 	return store, nil
 }
 
 // Close closes the store it graceully
-func (store *Store) Close() {
-	store.db.Close()
+func (store *Store) Close() error {
+	return store.db.Close()
 }
 
 // Set stores a key and value

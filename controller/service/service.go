@@ -26,6 +26,8 @@ import (
 
 // Service is the service
 type Service struct {
+	ctx             context.Context
+	cancel          context.CancelFunc
 	registry        *operation.Registry
 	server          *restapi.Server
 	api             *operations.ControllerAPI
@@ -266,6 +268,24 @@ func NewService(host string, port int, registry *operation.Registry) (*Service, 
 
 // Serve is a blocking call to start the server
 func (service *Service) Serve() error {
+	service.ctx, service.cancel = context.WithCancel(context.Background())
+	util.ShutdownHandler.RegisterCloseable(service)
 	service.startRedirecter()
 	return service.server.Serve()
+}
+
+// Close closes the service
+func (service *Service) Close() error {
+	service.cancel()
+	return nil
+}
+
+// IsClosed returns true if the service is already closed
+func (service *Service) IsClosed() bool {
+	select {
+	case <-service.ctx.Done():
+		return true
+	default:
+		return false
+	}
 }

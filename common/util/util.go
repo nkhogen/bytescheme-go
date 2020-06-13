@@ -4,8 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"reflect"
 	"runtime"
+	"sync"
+	"syscall"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -18,8 +23,57 @@ const (
 	XPrincipalKey = ContextKey("x-principal")
 )
 
+var (
+	// ShutdownHandler is the shutdown hook
+	ShutdownHandler *shutDownHandler
+)
+
+type shutDownHandler struct {
+	lock       *sync.Mutex
+	closeables map[uintptr]Closeable
+}
+
+// Closeable has a Close method
+type Closeable interface {
+	Close() error
+}
+
 // ContextKey is the context key
 type ContextKey string
+
+func init() {
+	ShutdownHandler = newShutDownHandler()
+}
+
+func newShutDownHandler() *shutDownHandler {
+	handler := &shutDownHandler{
+		lock:       &sync.Mutex{},
+		closeables: map[uintptr]Closeable{},
+	}
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		handler.lock.Lock()
+		defer handler.lock.Unlock()
+		for _, closeable := range handler.closeables {
+			closeable.Close()
+		}
+	}()
+	return handler
+}
+
+// RegisterCloseable registers closeables for shut down hook
+func (handler *shutDownHandler) RegisterCloseable(closeable Closeable) error {
+	if closeable == nil {
+		return fmt.Errorf("Invalid closeable")
+	}
+	value := reflect.ValueOf(closeable)
+	handler.lock.Lock()
+	defer handler.lock.Unlock()
+	handler.closeables[value.Pointer()] = closeable
+	return nil
+}
 
 // GetStringContextValue returns string context value
 func GetStringContextValue(ctx context.Context, key ContextKey) string {

@@ -5,8 +5,6 @@ import (
 	"bytescheme/controller/generated/models"
 	"context"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 var (
@@ -24,12 +22,6 @@ func InitStore() {
 	if err != nil {
 		panic(err)
 	}
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		Store.Close()
-	}()
 }
 
 // CreateStore instantiates the store
