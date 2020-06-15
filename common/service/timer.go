@@ -130,13 +130,9 @@ func (timer *Timer) watch() {
 					continue
 				}
 			}
-			now := time.Now()
-			if event.RecurMins == 0 {
-				// Not a recurring
-				if now.Sub(event.Time) > time.Minute {
-					timer.store.Delete(TimerKeyPrefix + event.ID)
-					continue
-				}
+			if event.RecurMins == 0 && time.Now().Sub(event.Time) > time.Minute {
+				timer.store.Delete(TimerKeyPrefix + event.ID)
+				continue
 			}
 			eventTime, eventDelay := timer.calculateNextEventTime(event.Time, event.RecurMins)
 			if event.Version == 0 {
