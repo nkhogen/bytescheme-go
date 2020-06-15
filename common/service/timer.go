@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,6 +20,11 @@ var (
 	EventScheduleWindow = time.Second * 90
 	// EventScanInterval is the DB scan interval
 	EventScanInterval = time.Second * 60
+
+	// CallbackRetryLimit is the retry limit for event callback
+	CallbackRetryLimit = 3
+	// CallbackRetryDelay is the retry delay
+	CallbackRetryDelay = time.Millisecond * 300
 )
 
 // EventCallback is the callback invoked by the timer
@@ -26,6 +32,7 @@ type EventCallback func(eventID string, data map[string]interface{}) error
 
 // Timer is the timer
 type Timer struct {
+	lock          *sync.Mutex
 	store         *db.Store
 	ctx           context.Context
 	cancel        context.CancelFunc
@@ -46,6 +53,7 @@ type Event struct {
 // NewTimer returns a new timer instance
 func NewTimer(store *db.Store, eventCallback EventCallback) *Timer {
 	timer := &Timer{
+		lock:          &sync.Mutex{},
 		store:         store,
 		eventTimers:   map[string]*time.Timer{},
 		eventCallback: eventCallback,
@@ -99,6 +107,8 @@ func (timer *Timer) watch() {
 			fmt.Printf("Error in fetching timers. Error: %s\n", err.Error())
 			return
 		}
+		timer.lock.Lock()
+		defer timer.lock.Unlock()
 		activeEventIDs := map[string]bool{}
 		for idx := range keyValues {
 			keyValue := keyValues[idx]
@@ -120,6 +130,14 @@ func (timer *Timer) watch() {
 					continue
 				}
 			}
+			now := time.Now()
+			if event.RecurMins == 0 {
+				// Not a recurring
+				if now.Sub(event.Time) > time.Minute {
+					timer.store.Delete(TimerKeyPrefix + event.ID)
+					continue
+				}
+			}
 			eventTime, eventDelay := timer.calculateNextEventTime(event.Time, event.RecurMins)
 			if event.Version == 0 {
 				event.Time = eventTime
@@ -136,25 +154,31 @@ func (timer *Timer) watch() {
 			activeEventIDs[event.ID] = true
 			fmt.Printf("Scheduling event %+v\n", event)
 			eventTimer = time.AfterFunc(eventDelay, func() {
-				if event.RecurMins != 0 {
-					eventTime, _ := timer.calculateNextEventTime(event.Time, event.RecurMins)
-					// now + just greater
-					event.Time = eventTime
-					fmt.Printf("Registering the recurring event %+v with next time %s\n", event, event.Time.String())
-					timer.saveEvent(event)
-					if err != nil {
-						return
-					}
-				}
+				defer func() {
+					timer.lock.Lock()
+					defer timer.lock.Unlock()
+					// Delete the executed timer
+					delete(timer.eventTimers, event.ID)
+				}()
 				// Callback
 				fmt.Printf("Triggering event %+v\n", event)
-				err = timer.eventCallback(event.ID, event.Data)
+				for i := 0; i < CallbackRetryLimit; i++ {
+					err = timer.eventCallback(event.ID, event.Data)
+					if err != nil {
+						continue
+					}
+					time.Sleep(CallbackRetryDelay)
+				}
 				if err != nil {
 					fmt.Printf("Error in invoking the callback for event %+v. Error: %s\n", event, err.Error())
 					return
 				}
-				// Delete the executed timer
-				delete(timer.eventTimers, event.ID)
+				// Persist the next event time
+				if event.RecurMins != 0 {
+					event.Time, _ = timer.calculateNextEventTime(event.Time, event.RecurMins)
+					fmt.Printf("Registering the recurring event %+v with next time %s\n", event, event.Time.String())
+					timer.saveEvent(event)
+				}
 			})
 			timer.eventTimers[event.ID] = eventTimer
 		}
