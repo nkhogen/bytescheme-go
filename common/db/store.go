@@ -3,6 +3,7 @@ package db
 import (
 	"bytescheme/common/util"
 	"fmt"
+	"time"
 
 	"github.com/dgraph-io/badger"
 	"github.com/dgraph-io/badger/options"
@@ -22,8 +23,9 @@ type StoreConfig struct {
 
 // KeyValue is a placeholder for key value pair
 type KeyValue struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key   string        `json:"key"`
+	Value string        `json:"value"`
+	TTL   time.Duration `json:"ttl"`
 }
 
 // NewStore creates an instance of the Store with the given config
@@ -62,7 +64,11 @@ func (store *Store) Set(kv *KeyValue) error {
 		return fmt.Errorf("Invalid key-value")
 	}
 	return store.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(kv.Key), []byte(kv.Value))
+		entry := badger.NewEntry([]byte(kv.Key), []byte(kv.Value))
+		if kv.TTL >= time.Second {
+			entry = entry.WithTTL(kv.TTL)
+		}
+		return txn.SetEntry(entry)
 	})
 }
 
@@ -104,7 +110,11 @@ func (store *Store) Sets(keyValues []*KeyValue) ([]*KeyValue, error) {
 	savedKeys := make([]*KeyValue, 0, len(keyValues))
 	for idx := range keyValues {
 		keyValue := keyValues[idx]
-		err := wb.Set([]byte(keyValue.Key), []byte(keyValue.Value)) // Will create txns as needed.
+		entry := badger.NewEntry([]byte(keyValue.Key), []byte(keyValue.Value))
+		if keyValue.TTL >= time.Second {
+			entry = entry.WithTTL(keyValue.TTL)
+		}
+		err := wb.SetEntry(entry) // Will create txns as needed.
 		if err != nil {
 			return []*KeyValue{}, err
 		}

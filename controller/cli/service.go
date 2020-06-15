@@ -33,6 +33,7 @@ func serviceCommandStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
+	service.InitTimer(registry)
 	svc, err := service.NewService(serviceCmdParams.host, serviceCmdParams.port, registry)
 	if err != nil {
 		panic(err)
