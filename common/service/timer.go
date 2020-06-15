@@ -64,9 +64,9 @@ func NewTimer(store *db.Store, eventCallback EventCallback) *Timer {
 	return timer
 }
 
-// calculateEventTime calculates the event time based on the current event time.
+// NextEventTime finds the next event time based on the current event time.
 // It returns the next event time and the delay.
-func (timer *Timer) calculateNextEventTime(eventTime time.Time, recurMins int) (time.Time, time.Duration) {
+func (timer *Timer) NextEventTime(eventTime time.Time, recurMins int) (time.Time, time.Duration) {
 	now := time.Now()
 	if recurMins == 0 {
 		remainingDuration := eventTime.Sub(now)
@@ -81,7 +81,8 @@ func (timer *Timer) calculateNextEventTime(eventTime time.Time, recurMins int) (
 	return now.Add(remainingDuration), remainingDuration
 }
 
-func (timer *Timer) saveEvent(event *Event) error {
+// SaveEvent saves an event to the DB
+func (timer *Timer) SaveEvent(event *Event) error {
 	event.Version = time.Now().UnixNano()
 	ba, err := util.ConvertToJSON(event)
 	if err != nil {
@@ -130,18 +131,20 @@ func (timer *Timer) watch() {
 					continue
 				}
 			}
-			if event.RecurMins == 0 && time.Now().Sub(event.Time) > time.Minute {
+			now := time.Now()
+			eventElapedTime := now.Sub(event.Time)
+			if event.RecurMins == 0 && eventElapedTime > time.Minute {
 				timer.store.Delete(TimerKeyPrefix + event.ID)
 				continue
 			}
-			eventTime, eventDelay := timer.calculateNextEventTime(event.Time, event.RecurMins)
 			if event.Version == 0 {
-				event.Time = eventTime
-				err = timer.saveEvent(event)
+				event.Time, _ = timer.NextEventTime(event.Time, event.RecurMins)
+				err = timer.SaveEvent(event)
 				if err != nil {
 					continue
 				}
 			}
+			eventDelay := event.Time.Sub(now)
 			if eventDelay > EventScheduleWindow {
 				// No need to schedule now
 				fmt.Printf("Ingoring event %+v as the event time is too far way\n", event)
@@ -171,9 +174,9 @@ func (timer *Timer) watch() {
 				}
 				// Persist the next event time
 				if event.RecurMins != 0 {
-					event.Time, _ = timer.calculateNextEventTime(event.Time, event.RecurMins)
+					event.Time, _ = timer.NextEventTime(event.Time, event.RecurMins)
 					fmt.Printf("Registering the recurring event %+v with next time %s\n", event, event.Time.String())
-					timer.saveEvent(event)
+					timer.SaveEvent(event)
 				}
 			})
 			timer.eventTimers[event.ID] = eventTimer
