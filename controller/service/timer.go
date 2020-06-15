@@ -1,13 +1,13 @@
 package service
 
 import (
+	"bytescheme/common/log"
 	"bytescheme/common/service"
 	"bytescheme/common/util"
 	gmodels "bytescheme/controller/generated/models"
 	"bytescheme/controller/operation"
 	"bytescheme/controller/shared"
 	"context"
-	"fmt"
 )
 
 var (
@@ -38,7 +38,7 @@ func (timer *ControllerTimer) OnEvent(id string, data map[string]interface{}) er
 	}
 	_, err = timer.registry.UpdateController(context.TODO(), controller)
 	if err != nil {
-		fmt.Printf("Error occurred in updating controller from timer. Error: %s\n", err.Error())
+		log.Errorf("Error occurred in updating controller from timer. Error: %s\n", err.Error())
 		return err
 	}
 	return nil

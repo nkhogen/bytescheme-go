@@ -17,6 +17,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/rakyll/statik v0.1.7
+	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/stianeikeland/go-rpio/v4 v4.4.0
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a

@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"bytescheme/common/log"
 	"bytescheme/common/service"
 	"bytescheme/common/util"
 	cntlr "bytescheme/controller/generated/client/controller"
@@ -168,7 +169,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 				if err == nil {
 					pin.Value = pinValue
 				} else {
-					fmt.Printf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+					log.Errorf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
 				}
 				continue
 			}
@@ -187,7 +188,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 				if err == nil {
 					pin.Value = pinValue
 				} else {
-					fmt.Printf("Error occurred in setting pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+					log.Errorf("Error occurred in setting pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
 				}
 				continue
 			}
@@ -195,14 +196,14 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 			if err == nil {
 				pin.Value = pinValue
 			} else {
-				fmt.Printf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+				log.Errorf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
 			}
 			continue
 		}
 		rpin := rpio.Pin(pinID)
 		if pin.Mode == gmodels.PinModeOutput {
 			rpin.Output()
-			fmt.Printf("Setting pin %d for controller %s to %s\n", pinID, *controller.ID, inPin.Value)
+			log.Infof("Setting pin %d for controller %s to %s\n", pinID, *controller.ID, inPin.Value)
 			if inPin.Value == gmodels.PinValueHigh {
 				rpin.High()
 			} else {
@@ -211,7 +212,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 			pin.Value = inPin.Value
 			continue
 		}
-		fmt.Printf("Reading pin %d for controller %s\n", pinID, *controller.ID)
+		log.Infof("Reading pin %d for controller %s\n", pinID, *controller.ID)
 		rpin.Input()
 		in := rpin.Read()
 		if in == rpio.High {

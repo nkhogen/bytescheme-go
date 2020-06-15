@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytescheme/common/log"
 	"bytescheme/common/service"
 	"bytescheme/common/util"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	gmodels "bytescheme/controller/generated/models"
@@ -37,5 +37,5 @@ func main() {
 		Data:      data,
 	}
 	ba, _ := json.MarshalIndent(event, " ", " ")
-	fmt.Printf("JSON:\n%s\n", string(ba))
+	log.Infof("JSON:\n%s\n", string(ba))
 }

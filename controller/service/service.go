@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytescheme/common/auth"
+	"bytescheme/common/log"
 	cservice "bytescheme/common/service"
 	"bytescheme/common/util"
 	gmodels "bytescheme/controller/generated/models"
@@ -63,18 +64,18 @@ func (service *Service) authorize(r *http.Request, iface interface{}) error {
 	// use context to lookup routes
 	route, ok := apiCtx.LookupRoute(r)
 	if !ok {
-		fmt.Printf("Route %s not found\n", r.RequestURI)
+		log.Errorf("Route %s not found\n", r.RequestURI)
 		return nil
 	}
 	pathPermKey := getPathPermissionKey(r.Method, route.PathPattern)
 	pathPerm, ok := service.pathPermissions[pathPermKey]
 	if !ok {
-		fmt.Printf("Permission not found for %s %s\n", r.Method, route.PathPattern)
+		log.Errorf("Permission not found for %s %s\n", r.Method, route.PathPattern)
 		return nil
 	}
 	principal, ok := iface.(*auth.Principal)
 	if !ok {
-		fmt.Printf("Principal type error for %+v\n", iface)
+		log.Errorf("Principal type error for %+v\n", iface)
 		err := fmt.Errorf("Unauthorized")
 		return model.NewServiceError(401, err)
 	}
@@ -85,7 +86,7 @@ func (service *Service) authorize(r *http.Request, iface interface{}) error {
 			}
 		}
 	}
-	fmt.Printf("Expected permission %s, found %s for path %s\n", pathPerm.Permission, "Read", route.PathPattern)
+	log.Errorf("Expected permission %s, found %s for path %s\n", pathPerm.Permission, "Read", route.PathPattern)
 	// Get from the role
 	err := fmt.Errorf("Forbidden")
 	return model.NewServiceError(403, err)
@@ -227,7 +228,7 @@ func (service *Service) startRedirecter() {
 		if strings.HasPrefix(r.Host, "bytescheme.") {
 			hostRequested = "bytescheme.mynetgear.com"
 		}
-		fmt.Printf("Requested host: %s, resolved host: %s\n", host, hostRequested)
+		log.Infof("Requested host: %s, resolved host: %s\n", host, hostRequested)
 		http.Redirect(w, r, fmt.Sprintf("https://%s%s", hostRequested, r.RequestURI), http.StatusMovedPermanently)
 	}))
 }

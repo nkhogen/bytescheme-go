@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytescheme/common/log"
 	"bytescheme/controller/generated/client/controller"
 	"bytescheme/controller/generated/models"
 	"crypto/tls"
@@ -45,7 +46,7 @@ func getController() (*models.Controller, error) {
 
 	ok, err := client.GetController(params, authParam)
 	if err != nil {
-		fmt.Printf("Error in getting the controller. Error: %s\n", err.Error())
+		log.Errorf("Error in getting the controller. Error: %s\n", err.Error())
 		return nil, err
 	}
 	return ok.Payload, nil

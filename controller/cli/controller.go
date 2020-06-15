@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytescheme/common/log"
 	"bytescheme/controller/generated/client/controller"
 	"bytescheme/controller/generated/models"
 	"crypto/tls"
@@ -77,11 +78,11 @@ func controllerCommandGet(cmd *cobra.Command, args []string) {
 
 	ok, err := client.GetController(params, authParam)
 	if err != nil {
-		fmt.Printf("Error in getting the controller. Error: %s\n", err.Error())
+		log.Errorf("Error in getting the controller. Error: %s\n", err.Error())
 		return
 	}
 	ba, _ := json.MarshalIndent(ok.Payload, " ", " ")
-	fmt.Printf("Controller \n%s\n", string(ba))
+	log.Infof("Controller \n%s\n", string(ba))
 }
 
 func controllerCommandSet(cmd *cobra.Command, args []string) {
@@ -93,7 +94,7 @@ func controllerCommandSet(cmd *cobra.Command, args []string) {
 
 	ok, err := client.GetController(params, authParam)
 	if err != nil {
-		fmt.Printf("Error in getting the controller. Error: %s\n", err.Error())
+		log.Errorf("Error in getting the controller. Error: %s\n", err.Error())
 		return
 	}
 	cntlr := ok.Payload
@@ -110,13 +111,13 @@ func controllerCommandSet(cmd *cobra.Command, args []string) {
 			updateParams.Payload = cntlr
 			updateOk, err := client.UpdateController(updateParams, authParam)
 			if err != nil {
-				fmt.Printf("Error in updating the controller. Error: %s\n", err.Error())
+				log.Errorf("Error in updating the controller. Error: %s\n", err.Error())
 			} else {
 				ba, _ := json.MarshalIndent(updateOk.Payload, " ", " ")
-				fmt.Printf("Controller \n%s\n", string(ba))
+				log.Infof("Controller \n%s\n", string(ba))
 			}
 			return
 		}
 	}
-	fmt.Printf("Unrecognized pin %d\n", controllerCmdParams.pinID)
+	log.Infof("Unrecognized pin %d\n", controllerCmdParams.pinID)
 }
