@@ -86,7 +86,7 @@ func (timer *Timer) SaveEvent(event *Event) error {
 	event.Version = time.Now().UnixNano()
 	ba, err := util.ConvertToJSON(event)
 	if err != nil {
-		log.Errorf("Error in scheduling the next event %+v. Error: %s\n", event, err.Error())
+		log.Errorf("Error in scheduling the next event %+v. Error: %s", event, err.Error())
 		return err
 	}
 	err = timer.store.Set(&db.KeyValue{
@@ -94,7 +94,7 @@ func (timer *Timer) SaveEvent(event *Event) error {
 		Value: string(ba),
 	})
 	if err != nil {
-		log.Errorf("Error in scheduling the next event %+v. Error: %s\n", event, err.Error())
+		log.Errorf("Error in scheduling the next event %+v. Error: %s", event, err.Error())
 		return err
 	}
 	return nil
@@ -102,10 +102,10 @@ func (timer *Timer) SaveEvent(event *Event) error {
 
 func (timer *Timer) watch() {
 	scheduler := func() {
-		log.Info("Running scheduler...\n")
+		log.Info("Running scheduler...")
 		keyValues, err := timer.store.Gets(TimerKeyPrefix)
 		if err != nil {
-			log.Errorf("Error in fetching timers. Error: %s\n", err.Error())
+			log.Errorf("Error in fetching timers. Error: %s", err.Error())
 			return
 		}
 		timer.lock.Lock()
@@ -116,7 +116,7 @@ func (timer *Timer) watch() {
 			event := &Event{}
 			err := util.ConvertFromJSON([]byte(keyValue.Value), event)
 			if err != nil {
-				log.Errorf("Error in conversion for event %+v\n", *keyValue)
+				log.Errorf("Error in conversion for event %+v", *keyValue)
 				continue
 			}
 			event.ID = strings.TrimPrefix(keyValue.Key, TimerKeyPrefix)
@@ -124,7 +124,7 @@ func (timer *Timer) watch() {
 			if ok {
 				if event.Version == 0 {
 					// Reload
-					log.Infof("Cancelling exiting timer %+v as there is an update\n", event)
+					log.Infof("Cancelling exiting timer %+v as there is an update", event)
 					eventTimer.Stop()
 					delete(timer.eventTimers, event.ID)
 				} else {
@@ -147,11 +147,11 @@ func (timer *Timer) watch() {
 			eventDelay := event.Time.Sub(now)
 			if eventDelay > EventScheduleWindow {
 				// No need to schedule now
-				log.Infof("Ignoring event %+v as the event time is too far way\n", event)
+				log.Infof("Ignoring event %+v as the event time is too far way", event)
 				continue
 			}
 			activeEventIDs[event.ID] = true
-			log.Infof("Scheduling event %+v\n", event)
+			log.Infof("Scheduling event %+v", event)
 			eventTimer = time.AfterFunc(eventDelay, func() {
 				defer func() {
 					timer.lock.Lock()
@@ -160,7 +160,7 @@ func (timer *Timer) watch() {
 					delete(timer.eventTimers, event.ID)
 				}()
 				// Callback
-				log.Infof("Triggering event %+v\n", event)
+				log.Infof("Triggering event %+v", event)
 				for i := 0; i < CallbackRetryLimit; i++ {
 					err = timer.eventCallback(event.ID, event.Data)
 					if err != nil {
@@ -169,13 +169,13 @@ func (timer *Timer) watch() {
 					time.Sleep(CallbackRetryDelay)
 				}
 				if err != nil {
-					log.Errorf("Error in invoking the callback for event %+v. Error: %s\n", event, err.Error())
+					log.Errorf("Error in invoking the callback for event %+v. Error: %s", event, err.Error())
 					return
 				}
 				// Persist the next event time
 				if event.RecurMins != 0 {
 					event.Time, _ = timer.NextEventTime(event.Time, event.RecurMins)
-					log.Infof("Registering the recurring event %+v with next time %s\n", event, event.Time.String())
+					log.Infof("Registering the recurring event %+v with next time %s", event, event.Time.String())
 					timer.SaveEvent(event)
 				}
 			})
@@ -186,7 +186,7 @@ func (timer *Timer) watch() {
 			if activeEventIDs[eventID] {
 				continue
 			}
-			log.Infof("Found inactive event ID %s\n", eventID)
+			log.Infof("Found inactive event ID %s", eventID)
 			eventTimer.Stop()
 			delete(timer.eventTimers, eventID)
 		}

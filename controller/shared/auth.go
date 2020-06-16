@@ -64,7 +64,7 @@ func VerifyToken(token string) (*auth.Principal, error) {
 	}
 	if value == nil {
 		// Not found..return nil to show 401 error
-		log.Errorf("User %s is not authorized\n", principal.Email)
+		log.Errorf("User %s is not authorized", principal.Email)
 		return nil, nil
 	}
 	dbPrincipal := &auth.Principal{}
@@ -86,7 +86,7 @@ func VerifyAPIKey(apiKey string) (*auth.Principal, error) {
 	}
 	if value == nil {
 		// Not found..return nil to show 401 error
-		log.Errorf("Key %s is not authorized\n", apiKey)
+		log.Errorf("Key %s is not authorized", apiKey)
 		return nil, nil
 	}
 	principal := &auth.Principal{}

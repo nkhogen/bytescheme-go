@@ -46,7 +46,7 @@ func getController() (*models.Controller, error) {
 
 	ok, err := client.GetController(params, authParam)
 	if err != nil {
-		log.Errorf("Error in getting the controller. Error: %s\n", err.Error())
+		log.Errorf("Error in getting the controller. Error: %s", err.Error())
 		return nil, err
 	}
 	return ok.Payload, nil

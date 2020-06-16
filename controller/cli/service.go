@@ -1,10 +1,10 @@
 package cli
 
 import (
-	"bytescheme/common/log"
 	"bytescheme/controller/operation"
 	"bytescheme/controller/service"
 	"bytescheme/controller/shared"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -40,6 +40,6 @@ func serviceCommandStart(cmd *cobra.Command, args []string) {
 	}
 	err = svc.Serve()
 	if err != nil {
-		log.Errorf("Error occurred while starting the service. Error: %s\n", err.Error())
+		fmt.Printf("Error occurred while starting the service. Error: %s\n", err.Error())
 	}
 }

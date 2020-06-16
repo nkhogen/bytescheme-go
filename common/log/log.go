@@ -39,9 +39,10 @@ func init() {
 // Level is the log level
 type Level uint32
 
-func resolvePointers(args ...interface{}) []interface{} {
+func resolvePointers(args []interface{}) []interface{} {
 	outArgs := make([]interface{}, 0, len(args))
-	for _, arg := range args {
+	for idx := range args {
+		arg := args[idx]
 		if arg == nil {
 			outArgs = append(outArgs, arg)
 			continue
@@ -85,7 +86,7 @@ func Debugf(format string, args ...interface{}) {
 func Error(args ...interface{}) {
 	if IsLevelEnabled(ErrorLevel) {
 		rArgs := resolvePointers(args)
-		logger.Error(rArgs)
+		logger.Error(rArgs...)
 	}
 }
 
@@ -93,7 +94,7 @@ func Error(args ...interface{}) {
 func Errorf(format string, args ...interface{}) {
 	if IsLevelEnabled(ErrorLevel) {
 		rArgs := resolvePointers(args)
-		logger.Errorf(format, rArgs)
+		logger.Errorf(format, rArgs...)
 	}
 }
 
@@ -101,7 +102,7 @@ func Errorf(format string, args ...interface{}) {
 func Info(args ...interface{}) {
 	if IsLevelEnabled(InfoLevel) {
 		rArgs := resolvePointers(args)
-		logger.Info(rArgs)
+		logger.Info(rArgs...)
 	}
 }
 
@@ -109,7 +110,7 @@ func Info(args ...interface{}) {
 func Infof(format string, args ...interface{}) {
 	if IsLevelEnabled(InfoLevel) {
 		rArgs := resolvePointers(args)
-		logger.Infof(format, rArgs)
+		logger.Infof(format, rArgs...)
 	}
 }
 
@@ -117,7 +118,7 @@ func Infof(format string, args ...interface{}) {
 func Warn(args ...interface{}) {
 	if IsLevelEnabled(WarnLevel) {
 		rArgs := resolvePointers(args)
-		logger.Warn(rArgs)
+		logger.Warn(rArgs...)
 	}
 }
 
@@ -125,6 +126,6 @@ func Warn(args ...interface{}) {
 func Warnf(format string, args ...interface{}) {
 	if IsLevelEnabled(WarnLevel) {
 		rArgs := resolvePointers(args)
-		logger.Warnf(format, rArgs)
+		logger.Warnf(format, rArgs...)
 	}
 }

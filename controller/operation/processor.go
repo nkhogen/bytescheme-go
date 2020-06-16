@@ -169,7 +169,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 				if err == nil {
 					pin.Value = pinValue
 				} else {
-					log.Errorf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+					log.Errorf("Error occurred in reading pin %d for client %d. Error: %s", pinID, clientID, err.Error())
 				}
 				continue
 			}
@@ -188,7 +188,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 				if err == nil {
 					pin.Value = pinValue
 				} else {
-					log.Errorf("Error occurred in setting pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+					log.Errorf("Error occurred in setting pin %d for client %d. Error: %s", pinID, clientID, err.Error())
 				}
 				continue
 			}
@@ -196,14 +196,14 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 			if err == nil {
 				pin.Value = pinValue
 			} else {
-				log.Errorf("Error occurred in reading pin %d for client %d. Error: %s\n", pinID, clientID, err.Error())
+				log.Errorf("Error occurred in reading pin %d for client %d. Error: %s", pinID, clientID, err.Error())
 			}
 			continue
 		}
 		rpin := rpio.Pin(pinID)
 		if pin.Mode == gmodels.PinModeOutput {
 			rpin.Output()
-			log.Infof("Setting pin %d for controller %s to %s\n", pinID, *controller.ID, inPin.Value)
+			log.Infof("Setting pin %d for controller %s to %s", pinID, *controller.ID, inPin.Value)
 			if inPin.Value == gmodels.PinValueHigh {
 				rpin.High()
 			} else {
@@ -212,7 +212,7 @@ func (localProcessor *LocalProcessor) SyncController(ctx context.Context, contro
 			pin.Value = inPin.Value
 			continue
 		}
-		log.Infof("Reading pin %d for controller %s\n", pinID, *controller.ID)
+		log.Infof("Reading pin %d for controller %s", pinID, *controller.ID)
 		rpin.Input()
 		in := rpin.Read()
 		if in == rpio.High {

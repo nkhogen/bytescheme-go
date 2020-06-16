@@ -38,7 +38,7 @@ func (timer *ControllerTimer) OnEvent(id string, data map[string]interface{}) er
 	}
 	_, err = timer.registry.UpdateController(context.TODO(), controller)
 	if err != nil {
-		log.Errorf("Error occurred in updating controller from timer. Error: %s\n", err.Error())
+		log.Errorf("Error occurred in updating controller from timer. Error: %s", err.Error())
 		return err
 	}
 	return nil

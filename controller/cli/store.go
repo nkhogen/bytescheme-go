@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bytescheme/common/log"
 	"bytescheme/controller/generated/client/store"
 	"bytescheme/controller/generated/models"
 	"bytescheme/controller/shared"
@@ -110,13 +109,13 @@ func storeCommandGet(cmd *cobra.Command, args []string) {
 	if storeCmdParams.isLocal {
 		store, err := shared.CreateStore(false)
 		if err != nil {
-			log.Errorf("Unable to open store. Error: %s\n", err.Error())
+			fmt.Printf("Unable to open store. Error: %s\n", err.Error())
 			return
 		}
 		defer store.Close()
 		keyValues, err = shared.ListStoreKeys(context.TODO(), store, storeCmdParams.key, storeCmdParams.isPrefix)
 		if err != nil {
-			log.Errorf("Unable to list store keys. Error: %s\n", err.Error())
+			fmt.Printf("Unable to list store keys. Error: %s\n", err.Error())
 			return
 		}
 
@@ -130,13 +129,13 @@ func storeCommandGet(cmd *cobra.Command, args []string) {
 		params.Prefix = &storeCmdParams.isPrefix
 		ok, err := client.ListStoreKeys(params, authParam)
 		if err != nil {
-			log.Errorf("Unable to list store keys. Error: %s\n", err.Error())
+			fmt.Printf("Unable to list store keys. Error: %s\n", err.Error())
 			return
 		}
 		keyValues = ok.Payload
 	}
 	for _, keyValue := range keyValues {
-		log.Infof("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
+		fmt.Printf("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
 	}
 }
 
@@ -150,13 +149,13 @@ func storeCommandSet(cmd *cobra.Command, args []string) {
 	if storeCmdParams.isLocal {
 		store, err := shared.CreateStore(false)
 		if err != nil {
-			log.Errorf("Unable to open store. Error: %s\n", err.Error())
+			fmt.Printf("Unable to open store. Error: %s\n", err.Error())
 			return
 		}
 		defer store.Close()
 		keyValues, err = shared.UpdateStoreKeys(context.TODO(), store, keyValues)
 		if err != nil {
-			log.Errorf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
+			fmt.Printf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
 			return
 		}
 	} else {
@@ -167,13 +166,13 @@ func storeCommandSet(cmd *cobra.Command, args []string) {
 		params.Payload = keyValues
 		ok, err := client.UpdateStoreKeys(params, authParam)
 		if err != nil {
-			log.Errorf("Unable to list store keys. Error: %s\n", err.Error())
+			fmt.Printf("Unable to list store keys. Error: %s\n", err.Error())
 			return
 		}
 		keyValues = ok.Payload
 	}
 	for _, keyValue := range keyValues {
-		log.Infof("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
+		fmt.Printf("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
 	}
 }
 
@@ -181,18 +180,18 @@ func storeCommandSetFile(cmd *cobra.Command, args []string) {
 	if !strings.HasPrefix(storeCmdParams.file, "/") {
 		path, err := os.Getwd()
 		if err != nil {
-			log.Errorf("Cannot open file %s. Error: %s\n", storeCmdParams.file, err.Error())
+			fmt.Printf("Cannot open file %s. Error: %s\n", storeCmdParams.file, err.Error())
 		}
 		storeCmdParams.file = filepath.Join(path, storeCmdParams.file)
 	}
 	r, err := os.Open(storeCmdParams.file)
 	if err != nil {
-		log.Errorf("Cannot open file %s. Error: %s\n", storeCmdParams.file, err.Error())
+		fmt.Printf("Cannot open file %s. Error: %s\n", storeCmdParams.file, err.Error())
 		return
 	}
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		log.Errorf("Cannot read file %s. Error: %s\n", storeCmdParams.file, err.Error())
+		fmt.Printf("Cannot read file %s. Error: %s\n", storeCmdParams.file, err.Error())
 	}
 	storeCmdParams.value = string(b)
 	keyValues := models.KeyValues{
@@ -204,14 +203,14 @@ func storeCommandSetFile(cmd *cobra.Command, args []string) {
 	if storeCmdParams.isLocal {
 		store, err := shared.CreateStore(false)
 		if err != nil {
-			log.Errorf("Unable to open store. Error: %s\n", err.Error())
+			fmt.Printf("Unable to open store. Error: %s\n", err.Error())
 			return
 		}
 		defer store.Close()
 
 		keyValues, err = shared.UpdateStoreKeys(context.TODO(), store, keyValues)
 		if err != nil {
-			log.Errorf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
+			fmt.Printf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
 			return
 		}
 	} else {
@@ -222,13 +221,13 @@ func storeCommandSetFile(cmd *cobra.Command, args []string) {
 		params.Payload = keyValues
 		ok, err := client.UpdateStoreKeys(params, authParam)
 		if err != nil {
-			log.Errorf("Unable to list store keys. Error: %s\n", err.Error())
+			fmt.Printf("Unable to list store keys. Error: %s\n", err.Error())
 			return
 		}
 		keyValues = ok.Payload
 	}
 	for _, keyValue := range keyValues {
-		log.Infof("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
+		fmt.Printf("Key: %s, Value: %s\n", keyValue.Key, keyValue.Value)
 	}
 }
 
@@ -237,13 +236,13 @@ func storeCommandDelete(cmd *cobra.Command, args []string) {
 	if storeCmdParams.isLocal {
 		store, err := shared.CreateStore(false)
 		if err != nil {
-			log.Errorf("Unable to open store. Error: %s\n", err.Error())
+			fmt.Printf("Unable to open store. Error: %s\n", err.Error())
 			return
 		}
 		defer store.Close()
 		keys, err = shared.DeleteStoreKeys(context.TODO(), store, storeCmdParams.key, storeCmdParams.isPrefix)
 		if err != nil {
-			log.Errorf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
+			fmt.Printf("Error occurred for key: %s, value: %s. Error: %s\n", storeCmdParams.key, storeCmdParams.value, err.Error())
 			return
 		}
 	} else {
@@ -256,12 +255,12 @@ func storeCommandDelete(cmd *cobra.Command, args []string) {
 
 		ok, err := client.DeleteStoreKeys(params, authParam)
 		if err != nil {
-			log.Errorf("Unable to delete store key. Error: %s\n", err.Error())
+			fmt.Printf("Unable to delete store key. Error: %s\n", err.Error())
 			return
 		}
 		keys = ok.Payload
 	}
 	for _, key := range keys {
-		log.Infof("Key %s deleted\n", key)
+		fmt.Printf("Key %s deleted\n", key)
 	}
 }

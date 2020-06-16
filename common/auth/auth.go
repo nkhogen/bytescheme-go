@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"fmt"
+	"bytescheme/common/log"
 
 	token "github.com/futurenda/google-auth-id-token-verifier"
 )
@@ -49,12 +49,12 @@ func (oauth2Config *OAuth2Config) GetPrincipal(idToken string) (*Principal, erro
 	}
 	err := verifier.VerifyIDToken(idToken, audience)
 	if err != nil {
-		fmt.Printf("Error in verifying token. Error: %s\n", err.Error())
+		log.Errorf("Error in verifying token. Error: %s", err.Error())
 		return nil, err
 	}
 	claimSet, err := token.Decode(idToken)
 	if err != nil {
-		fmt.Printf("Error in decoding token. Error: %s\n", err.Error())
+		log.Errorf("Error in decoding token. Error: %s", err.Error())
 		return nil, err
 	}
 	principal := &Principal{

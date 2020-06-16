@@ -79,7 +79,7 @@ func (server *EventServer) start() error {
 					if server.IsClosed() {
 						break
 					}
-					log.Errorf("Error in connection. Error: %s\n", err.Error())
+					log.Errorf("Error in connection. Error: %s", err.Error())
 					continue
 				}
 				go server.processClient(conn)
@@ -127,7 +127,7 @@ func (server *EventServer) clientCleaner() {
 		for clientID, connInfo := range server.connInfoMap {
 			connTime := time.Unix(0, connInfo.version)
 			if now.Sub(connTime) > ConnectionRefreshInterval {
-				log.Warnf("Declaring stale connection for client %d\n", clientID)
+				log.Warnf("Declaring stale connection for client %d", clientID)
 				connInfo.conn.Close()
 				// Safe to delete
 				delete(server.connInfoMap, clientID)
@@ -153,21 +153,21 @@ func (server *EventServer) processClient(conn net.Conn) {
 	message, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
 		conn.Close()
-		log.Errorf("Error in reading data from remote address %s. Error: %s\n", conn.RemoteAddr(), err.Error())
+		log.Errorf("Error in reading data from remote address %s. Error: %s", conn.RemoteAddr(), err.Error())
 		return
 	}
-	log.Infof("Message Received: %s\n", string(message))
+	log.Infof("Message Received: %s", string(message))
 	clientID, err := strconv.Atoi(strings.TrimSpace(message))
 	if err != nil {
 		conn.Close()
-		log.Errorf("Malformed message %s from remote address %s. Error: %s\n", message, conn.RemoteAddr(), err.Error())
+		log.Errorf("Malformed message %s from remote address %s. Error: %s", message, conn.RemoteAddr(), err.Error())
 		return
 	}
 	if server.onConnectCallback != nil {
 		err = server.onConnectCallback(clientID)
 		if err != nil {
 			conn.Close()
-			log.Errorf("Error in connection callback for client %d. Error: %s\n", clientID, err.Error())
+			log.Errorf("Error in connection callback for client %d. Error: %s", clientID, err.Error())
 			return
 		}
 	}
@@ -210,13 +210,13 @@ func (server *EventServer) Send(clientID int, message string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		log.Infof("Message %s sent successfully to client %d\n", message, clientID)
+		log.Infof("Message %s sent successfully to client %d", message, clientID)
 		message, err = bufio.NewReader(connInfo.conn).ReadString('\n')
 		if err != nil {
 			return "", err
 		}
 		message = strings.TrimSpace(message)
-		log.Infof("Message %s received from client %d\n", message, clientID)
+		log.Infof("Message %s received from client %d", message, clientID)
 		return message, nil
 	}
 
@@ -229,7 +229,7 @@ func (server *EventServer) Send(clientID int, message string) (string, error) {
 		}
 		message, err := sender(connInfo, message)
 		if err != nil {
-			log.Errorf("Failed to send message %s to client %d. Error: %s\n", message, clientID, err.Error())
+			log.Errorf("Failed to send message %s to client %d. Error: %s", message, clientID, err.Error())
 			staleDeleter(connInfo)
 			time.Sleep(RetryDelay)
 			continue
