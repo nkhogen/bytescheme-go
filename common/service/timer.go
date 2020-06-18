@@ -68,7 +68,8 @@ func NewTimer(store *db.Store, eventCallback EventCallback) *Timer {
 // It returns the next event time and the delay.
 func (timer *Timer) NextEventTime(eventTime time.Time, recurMins int) (time.Time, time.Duration) {
 	now := time.Now()
-	if recurMins == 0 {
+	if recurMins == 0 || now.Sub(eventTime) <= time.Minute {
+		// Non recurring or a buffer of 1 minute
 		remainingDuration := eventTime.Sub(now)
 		if remainingDuration < time.Second {
 			remainingDuration = time.Second
@@ -101,7 +102,7 @@ func (timer *Timer) SaveEvent(event *Event) error {
 }
 
 func (timer *Timer) watch() {
-	scheduler := func() {
+	scheduler := func(scheduledCount int64) {
 		log.Info("Running scheduler...")
 		keyValues, err := timer.store.Gets(TimerKeyPrefix)
 		if err != nil {
@@ -146,8 +147,10 @@ func (timer *Timer) watch() {
 			}
 			eventDelay := event.Time.Sub(now)
 			if eventDelay > EventScheduleWindow {
-				// No need to schedule now
-				log.Infof("Ignoring event %+v as the event time is too far way", event)
+				if scheduledCount%5 == 0 {
+					// No need to schedule now
+					log.Infof("Ignoring event %+v as the event time is too far way", event)
+				}
 				continue
 			}
 			activeEventIDs[event.ID] = true
@@ -191,15 +194,24 @@ func (timer *Timer) watch() {
 			delete(timer.eventTimers, eventID)
 		}
 	}
+	var scheduledCount int64
 	// Initial load
-	scheduler()
+	scheduler(scheduledCount)
+	done := make(chan bool, 1)
+	done <- true
 	ticker := time.NewTicker(EventScanInterval)
 	for {
 		select {
 		case <-timer.ctx.Done():
+			ticker.Stop()
 			return
 		case <-ticker.C:
-			scheduler()
+			select {
+			case <-done:
+				scheduledCount++
+				scheduler(scheduledCount)
+				done <- true
+			}
 		}
 	}
 }
