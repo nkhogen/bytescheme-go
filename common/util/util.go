@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytescheme/common/log"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,9 +12,11 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 )
 
 const (
@@ -31,6 +34,8 @@ var (
 type shutDownHandler struct {
 	lock       *sync.Mutex
 	closeables map[uintptr]Closeable
+	ctx        context.Context
+	cancel     context.CancelFunc
 }
 
 // Closeable has a Close method
@@ -50,10 +55,12 @@ func newShutDownHandler() *shutDownHandler {
 		lock:       &sync.Mutex{},
 		closeables: map[uintptr]Closeable{},
 	}
+	handler.ctx, handler.cancel = context.WithCancel(context.Background())
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigs
+		handler.cancel()
 		handler.lock.Lock()
 		defer handler.lock.Unlock()
 		for _, closeable := range handler.closeables {
@@ -61,6 +68,11 @@ func newShutDownHandler() *shutDownHandler {
 		}
 	}()
 	return handler
+}
+
+// Context returns the cancellable context in the shutdown handler
+func (handler *shutDownHandler) Context() context.Context {
+	return handler.ctx
 }
 
 // RegisterCloseable registers closeables for shut down hook
@@ -142,4 +154,46 @@ func ConvertToJSON(from interface{}) ([]byte, error) {
 func ResolveFilepath(relFilepath string) string {
 	_, file, _, _ := runtime.Caller(0)
 	return filepath.Join(filepath.Dir(file), "../../", relFilepath)
+}
+
+// MonitorJob invokes a monitoring at a regular interval until timeout
+func MonitorJob(ctx context.Context, checkInterval time.Duration, timeout time.Duration, job func(context.Context) (bool, error)) error {
+	timer := time.After(timeout)
+	ticker := time.Tick(checkInterval)
+	done := make(chan bool, 1)
+	isContinue, err := job(ctx)
+	if err != nil {
+		log.Errorf("Error in executing job")
+	}
+	if !isContinue {
+		return err
+	}
+	done <- true
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-timer:
+			return fmt.Errorf("Timed out")
+		case <-ticker:
+			select {
+			case <-done:
+				isContinue, err = job(ctx)
+				done <- true
+				if err != nil {
+					log.Errorf("Error in executing job")
+				}
+				if !isContinue {
+					return err
+				}
+			}
+		}
+	}
+}
+
+
+func GetUUID() string {
+	id := uuid.New().String()
+	id = uuid.ReplaceAll(id, "-", "")
+	return id
 }

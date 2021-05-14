@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
@@ -24,6 +25,12 @@ const (
 	SetPowerStatusFormat string = "SET %d %d"
 	// GetPowerStatusFormat is the message format to get power status from the connected device
 	GetPowerStatusFormat string = "GET %d"
+
+	// ClientSyncTimeout is the sync timeout
+	ClientSyncTimeout = time.Second * 20
+
+	//ClientSyncRetryInterval is sync retry interval
+	ClientSyncRetryInterval = time.Second * 4
 )
 
 // LocalProcessor means the RPI is local
@@ -67,8 +74,15 @@ func NewLocalProcessor(config *model.ProcessorConfig) (model.Processor, error) {
 	if config.Host != "" && config.Port > 0 {
 		eventServer, err := service.NewEventServer(config.Host, config.Port, func(clientID int) error {
 			// Sync the client with the cached data
-			_, err := processor.SyncController(context.Background(), config.Controller)
-			return err
+			return util.MonitorJob(util.ShutdownHandler.Context(), ClientSyncRetryInterval, ClientSyncTimeout, func(ctx context.Context) (bool, error) {
+				_, err := processor.SyncController(context.Background(), config.Controller)
+				if err == nil {
+					log.Infof("Successfully synced client %d on controller %s", clientID, config.Controller.ID)
+					return false, nil
+				}
+				log.Errorf("Failed to sync client %d on controller %s. Error: %s", clientID, config.Controller.ID, err.Error())
+				return true, err
+			})
 		})
 		if err != nil {
 			return nil, model.NewServiceError(500, err)

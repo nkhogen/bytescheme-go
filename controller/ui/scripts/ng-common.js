@@ -1,6 +1,6 @@
 var app = angular.module('app', []);
 
-const domain = "bytescheme.mynetgear.com"
+const domain = "controller.bytescheme.com"
 const baseUrl = `https://${domain}`
 const controllerId = "bfd8dd0a-10db-4782-86ec-b27f52d6362c"
 const clientId = "91456297737-d1p2ha4n2847bpsrdrcp72uhp614ar9q.apps.googleusercontent.com"

@@ -48,6 +48,9 @@ CONTROLLER_UI_DIR=${CONTROLLER_DIR}/ui
 
 CONTROLLER_SWAGGERUI_DIR=${CONTROLLER_UI_DIR}/swaggerui
 
+EDUCATIONAL_DIR=${SCRIPT_DIR}/edu
+MATH_SERVER_MAIN_FILE=${EDUCATIONAL_DIR}/math/server/server.go
+
 if [ -d "${CONTROLLER_GENERATED_DIR}" ]; then
   rm -rf "${CONTROLLER_GENERATED_DIR}"
 fi
@@ -76,8 +79,11 @@ statik -src=$CONTROLLER_UI_DIR -dest=$CONTROLLER_GENERATED_DIR
 # Compile controller CLI
 go build -ldflags '-w -s'  -o ${BIN_OUT_DIR}/controller ${CONTROLLER_MAIN_FILE}
 
+go build -ldflags '-w -s'  -o ${BIN_OUT_DIR}/mathserver ${MATH_SERVER_MAIN_FILE}
+
 # For linux arm (RPI)
 if [[ "$GOOS" == "linux" ]] && [[ "$GOARCH" == "arm" ]]; then
  scp ${BIN_OUT_DIR}/controller pi@192.168.1.20:/home/pi/controller
- ssh pi@192.168.1.20 'sudo systemctl stop controlboard.service && sudo cp /home/pi/controller /controlboard/bin/ && sudo systemctl start controlboard.service'
+ scp ${BIN_OUT_DIR}/mathserver pi@192.168.1.20:/home/pi/mathserver
+ ssh pi@192.168.1.20 'sudo systemctl stop controlboard.service && sudo cp /home/pi/controller /controlboard/bin/ && sudo cp /home/pi/mathserver /controlboard/bin/ && sudo systemctl start controlboard.service'
 fi

@@ -226,7 +226,7 @@ func (service *Service) startRedirecter() {
 	go http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hostRequested := host
 		if strings.HasPrefix(r.Host, "bytescheme.") {
-			hostRequested = "bytescheme.mynetgear.com"
+			hostRequested = "controller.bytescheme.com"
 		}
 		log.Infof("Requested host: %s, resolved host: %s", host, hostRequested)
 		http.Redirect(w, r, fmt.Sprintf("https://%s%s", hostRequested, r.RequestURI), http.StatusMovedPermanently)
@@ -250,8 +250,8 @@ func NewService(host string, port int, registry *operation.Registry) (*Service, 
 	server.TLSHost = host
 	server.Port = port
 	server.TLSPort = port + 3
-	server.TLSCertificate = flags.Filename(certDir + "/bytescheme.mynetgear.com.cer")
-	server.TLSCertificateKey = flags.Filename(certDir + "/bytescheme.mynetgear.com.key")
+	server.TLSCertificate = flags.Filename(certDir + "/controller.bytescheme.com.cer")
+	server.TLSCertificateKey = flags.Filename(certDir + "/controller.bytescheme.com.key")
 	svc := &Service{
 		registry:        registry,
 		server:          server,

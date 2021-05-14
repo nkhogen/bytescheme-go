@@ -2,8 +2,11 @@ package log
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path"
 	"reflect"
+	"runtime"
 
 	logger "github.com/sirupsen/logrus"
 )
@@ -25,6 +28,7 @@ func init() {
 	// Log as JSON instead of the default ASCII formatter.
 	logger.SetFormatter(&logger.TextFormatter{})
 
+	logger.AddHook(&ContextHook{})
 	// Report caller
 	//logger.SetReportCaller(true)
 
@@ -39,6 +43,23 @@ func init() {
 // Level is the log level
 type Level uint32
 
+// ContextHook is a logrus hook
+type ContextHook struct{}
+
+// Levels implementation
+func (hook *ContextHook) Levels() []logger.Level {
+	return logger.AllLevels
+}
+
+// Fire implementation
+func (hook *ContextHook) Fire(entry *logger.Entry) error {
+	if pc, file, line, ok := runtime.Caller(10); ok {
+		funcName := runtime.FuncForPC(pc).Name()
+		entry.Message = fmt.Sprintf("%s:%v:%s %s", path.Base(file), line, path.Base(funcName), entry.Message)
+	}
+	return nil
+}
+
 func resolvePointers(args []interface{}) []interface{} {
 	outArgs := make([]interface{}, 0, len(args))
 	for idx := range args {
@@ -47,18 +68,25 @@ func resolvePointers(args []interface{}) []interface{} {
 			outArgs = append(outArgs, arg)
 			continue
 		}
-		value := reflect.ValueOf(arg)
-		if value.Type().Kind() == reflect.Struct || value.Type().Kind() == reflect.Map || value.Type().Kind() == reflect.Slice {
-			ba, _ := json.Marshal(arg)
-			outArgs = append(outArgs, string(ba))
-		} else if value.Type().Kind() == reflect.Ptr {
-			value = reflect.Indirect(value)
-			outArgs = append(outArgs, value.Interface())
-		} else {
-			outArgs = append(outArgs, arg)
-		}
+		outArgs = append(outArgs, printFriendly(arg))
 	}
 	return outArgs
+}
+
+func printFriendly(i interface{}) interface{} {
+	value := reflect.ValueOf(i)
+	if value.Type().Kind() == reflect.Struct || value.Type().Kind() == reflect.Map || value.Type().Kind() == reflect.Slice {
+		ba, _ := json.Marshal(value.Interface())
+		return string(ba)
+	}
+	if value.Type().Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return nil
+		}
+		value = reflect.Indirect(value)
+		return printFriendly(value.Interface())
+	}
+	return i
 }
 
 // IsLevelEnabled checks the given level is enabled

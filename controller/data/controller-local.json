@@ -11,13 +11,13 @@
       },
       {
         "id": 112,
-        "name" : "Hydroponic",
+        "name" : "NFT Hydroponic",
         "mode": "Output",
         "value": "High"
       },
       {
         "id": 113,
-        "name" : "Master Outdoor",
+        "name" : "DWC Hydroponic",
         "mode": "Output",
         "value": "High"
        },

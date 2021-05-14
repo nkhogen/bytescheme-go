@@ -1,9 +1,14 @@
 package cli
 
+const (
+	// ServerHost is where the server is running
+	ServerHost = "controller.bytescheme.com"
+)
+
 var (
 	storeCmdParams = &storeCommandParams{
 		serverParams: serverParams{
-			host:   "bytescheme.mynetgear.com",
+			host:   ServerHost,
 			port:   443,
 			scheme: "https",
 			apiKey: "Abomcha@123",
@@ -12,7 +17,7 @@ var (
 
 	serviceCmdParams = &serviceCommandParams{
 		serverParams: serverParams{
-			host:   "bytescheme.mynetgear.com",
+			host:   ServerHost,
 			port:   443,
 			scheme: "https",
 			apiKey: "Abomcha@123",
@@ -21,7 +26,7 @@ var (
 
 	controllerCmdParams = &controllerCommandParams{
 		serverParams: serverParams{
-			host:   "bytescheme.mynetgear.com",
+			host:   ServerHost,
 			port:   443,
 			scheme: "https",
 			apiKey: "Abomcha@123",

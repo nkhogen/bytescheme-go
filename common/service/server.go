@@ -163,12 +163,17 @@ func (server *EventServer) processClient(conn net.Conn) {
 		log.Errorf("Malformed message %s from remote address %s. Error: %s", message, conn.RemoteAddr(), err.Error())
 		return
 	}
-	if server.onConnectCallback != nil {
-		err = server.onConnectCallback(clientID)
-		if err != nil {
-			conn.Close()
-			log.Errorf("Error in connection callback for client %d. Error: %s", clientID, err.Error())
-			return
+	syncFunc := func() {
+		if server.onConnectCallback != nil {
+			err = server.onConnectCallback(clientID)
+			if err != nil {
+				server.rwLock.Lock()
+				defer server.rwLock.Unlock()
+				conn.Close()
+				delete(server.connInfoMap, clientID)
+				log.Errorf("Error in connection callback for client %d. Error: %s", clientID, err.Error())
+				return
+			}
 		}
 	}
 	server.rwLock.Lock()
@@ -183,6 +188,7 @@ func (server *EventServer) processClient(conn net.Conn) {
 		version:  time.Now().UnixNano(),
 		lock:     &sync.Mutex{},
 	}
+	go syncFunc()
 }
 
 // Send sends a message to the client

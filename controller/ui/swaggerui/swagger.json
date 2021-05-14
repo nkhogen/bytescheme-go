@@ -14,7 +14,7 @@
     "title": "Controller by Bytescheme",
     "version": "1.0.0"
   },
-  "host": "bytescheme.mynetgear.com",
+  "host": "controller.bytescheme.com",
   "basePath": "/",
   "paths": {
     "/v1/store/keys": {
