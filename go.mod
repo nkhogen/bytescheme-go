@@ -14,6 +14,7 @@ require (
 	github.com/go-openapi/validate v0.19.7
 	github.com/go-swagger/go-swagger v0.23.0 // indirect
 	github.com/golang/protobuf v1.4.2
+	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/rakyll/statik v0.1.7

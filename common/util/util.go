@@ -13,6 +13,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -194,6 +195,6 @@ func MonitorJob(ctx context.Context, checkInterval time.Duration, timeout time.D
 
 func GetUUID() string {
 	id := uuid.New().String()
-	id = uuid.ReplaceAll(id, "-", "")
+	id = strings.ReplaceAll(id, "-", "")
 	return id
 }
