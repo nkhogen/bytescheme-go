@@ -54,13 +54,10 @@ type ProblemGenerator struct {
 	Conf *Config
 }
 
-func generateNum(digitLen int) string {
+func generateNum(start, digitLen int) string {
 	buff := &bytes.Buffer{}
 	for i := 0; i < digitLen; i++ {
-		n := 0
-		for n == 0 {
-			n = random.Intn(10)
-		}
+		n := start + random.Intn(10-start)
 		if buff.Len() > 0 {
 			buff.WriteByte(' ')
 		}
@@ -117,8 +114,8 @@ func (gen *ProblemGenerator) GenerateMult(buff *bytes.Buffer, serial *int) {
 			buff.WriteString("<td>")
 			buff.WriteString(strconv.Itoa(*serial))
 			buff.WriteString(".</td>")
-			first := generateNum(config.FirstLen)
-			second :=  generateNum(config.SecondLen)
+			first := generateNum(1, config.FirstLen)
+			second :=  generateNum(1, config.SecondLen)
 			buff.WriteString("<td>")
 			buff.WriteString(first)
 			buff.WriteString("<br>")
@@ -149,13 +146,10 @@ func (gen *ProblemGenerator) GenerateDiv(buff *bytes.Buffer, serial *int) {
 			buff.WriteString("<td>")
 			buff.WriteString(strconv.Itoa(*serial))
 			buff.WriteString(".</td>")
-			quotientStr := generateNum(config.QuotientLen)
+			quotientStr := generateNum(1, config.QuotientLen)
 			quotient, _ := strconv.Atoi(strings.ReplaceAll(quotientStr, " ", ""))
-			divisor := 1
-			for divisor == 1 {
-				divisorStr := generateNum(config.DivisorLen)
-				divisor, _ = strconv.Atoi(strings.ReplaceAll(divisorStr, " ", ""))
-			}
+			divisorStr := generateNum(2, config.DivisorLen)
+			divisor, _ := strconv.Atoi(strings.ReplaceAll(divisorStr, " ", ""))
 			dividend := divisor * quotient
 			buff.WriteString("<td>")
 			buff.WriteString(strconv.Itoa(dividend))
@@ -180,9 +174,9 @@ func (gen *ProblemGenerator) GenerateSub(buff *bytes.Buffer, serial *int) {
 			buff.WriteString("<td>")
 			buff.WriteString(strconv.Itoa(*serial))
 			buff.WriteString(".</td>")
-			subtractorStr := generateNum(config.SubtractorLen)
+			subtractorStr := generateNum(1, config.SubtractorLen)
 			subtractor, _ := strconv.Atoi(strings.ReplaceAll(subtractorStr, " ", ""))
-			resultStr :=  generateNum(config.ResultLen)
+			resultStr :=  generateNum(1, config.ResultLen)
 			result, _ := strconv.Atoi(strings.ReplaceAll(resultStr, " ", ""))
 			firstStr := strconv.Itoa(subtractor + result)
 			firstStr = strings.Join(strings.Split(firstStr, ""), " ")
